@@ -18,9 +18,6 @@ GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
 GLdouble zFar = 500;
 
-// anim var
-double alienY = 1;
-bool alienD = true;
 
 class Vector
 {
@@ -51,6 +48,7 @@ int lvl = 2;
 
 // Model Variables lvl1
 Model_3DS model_player;
+Model_3DS model_mars;
 //Model_3DS model_house;
 //Model_3DS model_tree;
 //Model_3DS model_car;
@@ -191,15 +189,135 @@ void RenderGround()
 	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
 }
 
+
+//==============================
+//  Animation var
+//==============================
+
+//time ( affect the background)
+double time = 0;
+
+//alien
+double alienY = 1;
+bool alienD = true;
+
+//cyrstal
+double cyrstalR = 1;
+bool cyrstalD = true;
+
+//metal 
+double collectY = 2;
+
+//=======================================================================
+// Draw Functions
+//=======================================================================
+
+void drawPlayer(double x,  double z) {	
+	glPushMatrix();
+	glTranslatef(x, 0, z);
+	glScalef(2, 2, 2);
+	model_player.Draw();
+	glPopMatrix();
+}
+
+void drawCollectable(double x,  double z) {
+
+	if (lvl == 1) {
+		glPushMatrix();
+		//glTranslatef(5, alienY, -5);
+		//glScalef(0.03, 0.03, 0.03);
+		//model_alien.Draw();
+		glPopMatrix();
+	}
+	else if (lvl == 2) {
+		glPushMatrix();
+		glTranslatef(x, 0, z);
+		glScalef(0.5, 0.5, 0.5);
+		model_cyrstal.Draw();
+		glPopMatrix();
+
+		glColor4f(1.0f, 1.0f, 1.0f, 0.5f); // Green color with transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		GLUquadric* quadric = gluNewQuadric();
+
+		glPushMatrix();
+		glTranslatef(x, 0.0, z); // Adjust the position of the sphere
+		gluSphere(quadric, cyrstalR, 32, 32); // Draw a sphere with radius 1.0
+		glPopMatrix();
+
+		gluDeleteQuadric(quadric);
+		glDisable(GL_BLEND);
+	}
+}
+
+void drawObstacle(double x,  double z) {
+
+	if (lvl == 1) {
+		glPushMatrix();
+		//glTranslatef(5, alienY, -5);
+		//glScalef(0.03, 0.03, 0.03);
+		//model_alien.Draw();
+		glPopMatrix();
+	}
+	else if (lvl == 2) {
+		glPushMatrix();
+		glTranslatef(x, alienY, z);
+		glScalef(0.03, 0.03, 0.03);
+		model_alien.Draw();
+		glPopMatrix();
+	}
+}
+
+void drawTarget(double x, double z) {
+	if (lvl == 1) {
+		glPushMatrix();
+		//glTranslatef(5, alienY, -5);
+		//glScalef(0.03, 0.03, 0.03);
+		//model_alien.Draw();
+		glPopMatrix();
+	}
+	else if (lvl == 2) {
+		glPushMatrix();
+		glTranslatef(x, -1, z);
+		//glRotatef(90.f, 1, 0, 0);
+		glScalef(10, 10, 10);
+		model_rocket.Draw();
+		glPopMatrix();
+	}
+}
+
+
+void drawBackground() {
+	double x_bg = -time-5;
+	double z_bg = (x_bg * x_bg) + 10;
+	if (lvl == 1) {
+		// Draw moon Model in background
+		glPushMatrix();
+		glTranslatef(-10, 10, -15);
+		glScalef(0.08, 0.08, 0.08);
+		model_mars.Draw();
+		glPopMatrix();
+	}
+	else if (lvl == 2) {
+		// Draw moon Model in background
+		glPushMatrix();
+		glTranslatef(-10, 10, -15);
+		glScalef(0.08, 0.08, 0.08);
+		model_moon.Draw();
+		glPopMatrix();
+	}
+	
+
+}
+
 //=======================================================================
 // Display Function
 //=======================================================================
 void myDisplay(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
@@ -207,60 +325,29 @@ void myDisplay(void)
 
 	// Draw Ground
 	RenderGround();
+	drawBackground();
 
-	// Draw moon Model in background
-	glPushMatrix();
-	glTranslatef(-10, 10, -15);
-	glScalef(0.08, 0.08, 0.08);
-	model_moon.Draw();
-	glPopMatrix();
+	// player ( robot)
+	drawPlayer(0, 0);
 
-	// Draw rocket Model target
-	glPushMatrix();
-	glTranslatef(0, -1, 0);
-	//glRotatef(90.f, 1, 0, 0);
-	//model_rocket.Draw();
-	glPopMatrix();
+	//Target ( lvl 1 -> space station , lvl 2 -> rocket)
+	drawTarget(15, -10);
 
-	// Draw cyrstal Model
-	glPushMatrix();
-	glTranslatef(10, 0, 10);
-	//glColor3f(1, 1, 1);
-	glScalef(0.5, 0.5, 0.5);
-	model_cyrstal.Draw();
-	glPopMatrix();
+	//Collectable ( lvl 1 -> , lvl 2 -> cyrstal)
+	drawCollectable(-5,   10);
+	drawCollectable(2,  10);
+	drawCollectable(9,  10);
+	drawCollectable(16,  10);
 
-	// Draw alien 1 Model
-	glPushMatrix();
-	glTranslatef(5, alienY, 5);
-	glScalef(0.03, 0.03, 0.03);
-	model_alien.Draw();
-	glPopMatrix();
-
-	// Draw alien 2 Model
-	glPushMatrix();
-	glTranslatef(-5, alienY, 5);
-	glScalef(0.03, 0.03, 0.03);
-	model_alien.Draw();
-	glPopMatrix();
-
-	// Draw alien 3 Model
-	glPushMatrix();
-	glTranslatef(5, alienY, -5);
-	glScalef(0.03, 0.03, 0.03);
-	model_alien.Draw();
-	glPopMatrix();
-
-	// Draw alien 4 Model
-	glPushMatrix();
-	glTranslatef(-5, alienY, -5);
-	glScalef(0.03, 0.03, 0.03);
-	model_alien.Draw();
-	glPopMatrix();
+	//Obstacle (lvl 1 -> metal , lvl 2 -> alien )
+	drawObstacle(-7,  3);
+	drawObstacle(0,  3);
+	drawObstacle(7,  3);
+	drawObstacle(14, 3);
+	
 	
 	//sky box
 	glPushMatrix();
-
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric(); 
 	glTranslated(50, 0, 0);
@@ -270,13 +357,51 @@ void myDisplay(void)
 	gluQuadricNormals(qobj, GL_SMOOTH);
 	gluSphere(qobj, 100, 100, 100);
 	gluDeleteQuadric(qobj);
-
-
 	glPopMatrix();
 
 
-
 	glutSwapBuffers();
+}
+
+
+//=======================================================================
+// Animation Function
+//=======================================================================
+void Anim(int value) {
+
+	// animate moon/mars in background
+	time += 0.1;
+
+	// animate lvl 2 aliens
+	if (alienD) {
+		alienY += 0.1;
+		if (alienY > 1.2) {
+			alienD = false;
+		}
+	}
+	else {
+		alienY -= 0.1;
+		if (alienY < 0.7) {
+			alienD = true;
+		}
+	}
+
+	// animate lvl 2 aliens
+	if (cyrstalD) {
+		cyrstalR += 0.1;
+		if (cyrstalR > 1.5 ) {
+			cyrstalD = false;
+		}
+	}
+	else {
+		cyrstalR -= 0.1;
+		if (cyrstalR < 0.7) {
+			cyrstalD = true;
+		}
+	}
+
+	glutPostRedisplay();
+	glutTimerFunc(100, Anim, 0);
 }
 
 //=======================================================================
@@ -377,11 +502,16 @@ void myReshape(int w, int h)
 void LoadAssets()
 {
 	// Loading Model files
+
 	model_player.Load("Models/robot.3ds");
-	model_rocket.Load("Models/rocket.3ds");
+	//level 1
+	model_mars.Load("Models/Mars/moon.3DS");
+	//level 2 
+	model_moon.Load("Models/Moon/moon.3DS");
+	model_rocket.Load("Models/untitled1.x3d");
 	model_cyrstal.Load("Models/cyrstal.3ds");
 	model_alien.Load("Models/Space_Invader.3DS");
-	model_moon.Load("Models/Moon/moon.3DS");
+	
 
 	//loadBMP()
 	// Loading texture files
@@ -391,27 +521,6 @@ void LoadAssets()
 	loadBMP(&tex, "Textures/SpaceTexture.bmp", true);
 }
 
-
-//=======================================================================
-// Animation Function
-//=======================================================================
-void Anim() {
-	
-	if (alienD) {
-		alienY += 0.1;
-		if (alienY > 1.2) {
-			alienD = false;
-		}
-	}
-	else {
-		alienY -= 0.1;
-		if (alienY < 0.7) {
-			alienD = true;
-		}
-	}
-
-	glutPostRedisplay();
-}
 
 //=======================================================================
 // Main Function
@@ -447,6 +556,7 @@ void main(int argc, char** argv)
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_COLOR_MATERIAL);
 	//glutIdleFunc(Anim);
+	glutTimerFunc(0, Anim, 0);
 
 	glShadeModel(GL_SMOOTH);
 
