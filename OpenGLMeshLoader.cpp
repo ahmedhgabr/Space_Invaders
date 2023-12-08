@@ -2,6 +2,7 @@
 #include "Model_3DS.h"
 #include "GLTexture.h"
 #include <glut.h>
+#include <math.h>
 
 #pragma comment(lib,"winmm.lib")
 
@@ -17,6 +18,32 @@ GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
 GLdouble zFar = 500;
+
+//==============================
+//  Animation var
+//==============================
+
+//time ( affect the background)
+double time = 0;
+bool povFlag = true;
+
+//player 
+double playerX = 0;
+double playerY = 0;
+double playerZ = 20;
+
+//alien
+double alienY = 1;
+bool alienD = true;
+
+//cyrstal
+double cyrstalR = 1;
+bool cyrstalD = true;
+
+//metal 
+double collectY = 2;
+
+/// ///////////////////////////
 
 
 class Vector
@@ -37,11 +64,161 @@ public:
 	}
 };
 
-Vector Eye(20, 5, 20);
-Vector At(0, 0, 0);
-Vector Up(0, 1, 0);
+
 
 int cameraZoom = 0;
+
+///////////////////////
+// camera
+////////////////////////
+class Vector3f {
+public:
+	float x, y, z;
+
+	Vector3f(float _x = 0.0f, float _y = 0.0f, float _z = 0.0f) {
+		x = _x;
+		y = _y;
+		z = _z;
+	}
+
+	Vector3f operator+(const Vector3f& v) const {
+		return Vector3f(x + v.x, y + v.y, z + v.z);
+	}
+
+	Vector3f operator-(const Vector3f& v) const {
+		return Vector3f(x - v.x, y - v.y, z - v.z);
+	}
+
+	Vector3f operator*(float n) const {
+		return Vector3f(x * n, y * n, z * n);
+	}
+
+	Vector3f operator/(float n) const {
+		return Vector3f(x / n, y / n, z / n);
+	}
+
+	Vector3f unit() const {
+		return *this / sqrt(x * x + y * y + z * z);
+	}
+
+	Vector3f cross(const Vector3f v) const {
+		return Vector3f(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+	}
+};
+
+class Camera {
+public:
+	Vector3f eye, center, up;
+
+	Camera(float eyeX = 00.0f, float eyeY = 10.0f, float eyeZ = 40.0f, float centerX = 0.0f, float centerY = 0.0f, float centerZ = 0.0f, float upX = 0.0f, float upY = 1.0f, float upZ = 0.0f) {
+		eye = Vector3f(eyeX, eyeY, eyeZ);
+		center = Vector3f(centerX, centerY, centerZ);
+		up = Vector3f(upX, upY, upZ);
+	}
+
+	void moveX(float d) {
+		Vector3f right = up.cross(center - eye).unit();
+		eye = eye + right * d;
+		center = center + right * d;
+	}
+
+	void moveY(float d) {
+		eye = eye + up.unit() * d;
+		center = center + up.unit() * d;
+	}
+
+	void moveZ(float d) {
+		Vector3f view = (center - eye).unit();
+		eye = eye + view * d;
+		center = center + view * d;
+	}
+
+	/*void rotateX(float a) {
+		Vector3f view = (center - eye).unit();
+		Vector3f right = up.cross(view).unit();
+		view = view * cos(DEG2RAD(a)) + up * sin(DEG2RAD(a));
+		up = view.cross(right);
+		center = eye + view;
+	}*/
+
+	/*void rotateY(float a) {
+		Vector3f view = (center - eye).unit();
+		Vector3f right = up.cross(view).unit();
+		view = view * cos(DEG2RAD(a)) + right * sin(DEG2RAD(a));
+		right = view.cross(up);
+		center = eye + view;
+	}*/
+
+	void frontView() {
+		eye.x = 0.704500; eye.y = 0.516275; eye.z = 1.992220;
+		center.x = 0.733254; center.y = 0.547967; center.z = 0.993137;
+		up.x = -0.018030; up.y = 0.999351; up.z = -0.031182;
+	}
+
+	void topView() {
+		eye.x = 0.814365; eye.y = 2.094872; eye.z = 0.634981;
+		center.x = 0.786670; center.y = 1.113113; center.z = 0.446877;
+		up.x = 0.018926; up.y = 0.187628; up.z = -0.982058;
+	}
+
+	void sideView() {
+		eye.x = -0.000570; eye.y = 0.315733; eye.z = 0.507410;
+		center.x = 0.996359; center.y = 0.257254; center.z = 0.559495;
+		up.x = 0.059884; up.y = 0.997871; up.z = -0.025836;
+	}
+
+	void firstPerson() {
+		eye.x = playerX + 1;
+		eye.y = 4;
+		eye.z = playerZ -1;
+
+		center.x = playerX + 1;
+		center.y = 0;
+		center.z = playerZ -10  ;
+
+
+		//glutPostRedisplay();
+	}
+
+	void thirdPerson() {
+		eye.x = playerX+1;
+		eye.y = 6;
+		eye.z = playerZ +11;
+
+		center.x = playerX+1;
+		center.y = 0;
+		center.z = playerZ-4;
+
+
+		//glutPostRedisplay();
+	}
+
+	void pov() {
+		if (povFlag) {
+			firstPerson();
+		}
+		else {
+			thirdPerson();
+		}
+	}
+
+
+	void look() {
+		gluLookAt(
+			eye.x, eye.y, eye.z,
+			center.x, center.y, center.z,
+			up.x, up.y, up.z
+		);
+		printf("%f ", eye.x); printf("%f ", eye.y); printf("%f \n", eye.z);
+		printf("%f ", center.x); printf("%f ", center.y); printf("%f \n", center.z);
+		printf("%f ", up.x); printf("%f ", up.y); printf("%f \n\n", up.z);
+	}
+};
+
+Camera camera;
+
+
+//////////////////////////////////////
 
 //lvl var
 int lvl = 2;
@@ -136,7 +313,7 @@ void myInit(void)
 
 	glLoadIdentity();
 
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
+	camera.look();
 	//*******************************************************************************************//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
@@ -190,23 +367,7 @@ void RenderGround()
 }
 
 
-//==============================
-//  Animation var
-//==============================
 
-//time ( affect the background)
-double time = 0;
-
-//alien
-double alienY = 1;
-bool alienD = true;
-
-//cyrstal
-double cyrstalR = 1;
-bool cyrstalD = true;
-
-//metal 
-double collectY = 2;
 
 //=======================================================================
 // Draw Functions
@@ -214,8 +375,9 @@ double collectY = 2;
 
 void drawPlayer(double x,  double z) {	
 	glPushMatrix();
-	glTranslatef(x, 0, z);
-	glScalef(2, 2, 2);
+	glTranslatef(x, playerY,z );
+	glRotatef(180, 0, 1, 0);
+	glScalef(0.007, 0.007, 0.007);
 	model_player.Draw();
 	glPopMatrix();
 }
@@ -328,7 +490,7 @@ void myDisplay(void)
 	drawBackground();
 
 	// player ( robot)
-	drawPlayer(0, 0);
+	drawPlayer(playerX, playerZ);
 
 	//Target ( lvl 1 -> space station , lvl 2 -> rocket)
 	drawTarget(15, -10);
@@ -412,10 +574,20 @@ void myKeyboard(unsigned char button, int x, int y)
 	switch (button)
 	{
 	case 'w':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		playerZ-=0.4;
+		
 		break;
-	case 'r':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	case 'a':
+		playerX-=0.4;
+		
+		break;
+	case 's':
+		playerZ+=0.4;
+		
+		break;
+	case 'd':
+		playerX+=0.4;
+		
 		break;
 	case 27:
 		exit(0);
@@ -423,17 +595,21 @@ void myKeyboard(unsigned char button, int x, int y)
 	default:
 		break;
 	}
+	
 
+	camera.pov();
+	glLoadIdentity();
+	camera.look();
 	glutPostRedisplay();
 }
 
 //=======================================================================
 // Motion Function
 //=======================================================================
-void myMotion(int x, int y)
+
+/*void myMotion(int x, int y)
 {
 	y = HEIGHT - y;
-
 	if (cameraZoom - y > 0)
 	{
 		Eye.x += -0.1;
@@ -444,36 +620,37 @@ void myMotion(int x, int y)
 		Eye.x += 0.1;
 		Eye.z += 0.1;
 	}
-
 	cameraZoom = y;
-
 	glLoadIdentity();	//Clear Model_View Matrix
-
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);	//Setup Camera with modified paramters
-
 	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
 	glutPostRedisplay();	//Re-draw scene 
-}
+}*/
 
 //=======================================================================
 // Mouse Function
 //=======================================================================
 void myMouse(int button, int state, int x, int y)
 {
-	y = HEIGHT - y;
-
-	if (state == GLUT_DOWN)
+	if (button == GLUT_LEFT_BUTTON)
 	{
-		cameraZoom = y;
+		povFlag = true;
 	}
+	else if (button == GLUT_RIGHT_BUTTON)
+	{
+		povFlag = false;
+	}
+	camera.pov();
+	glLoadIdentity();	//Clear Model_View Matrix
+	camera.look();
+	glutPostRedisplay();
 }
 
 //=======================================================================
 // Reshape Function
 //=======================================================================
-void myReshape(int w, int h)
+/*void myReshape(int w, int h)
 {
 	if (h == 0) {
 		h = 1;
@@ -494,7 +671,7 @@ void myReshape(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-}
+}*/
 
 //=======================================================================
 // Assets Loading Function
@@ -508,7 +685,7 @@ void LoadAssets()
 	model_mars.Load("Models/Mars/moon.3DS");
 	//level 2 
 	model_moon.Load("Models/Moon/moon.3DS");
-	model_rocket.Load("Models/untitled1.x3d");
+	//model_rocket.Load("Models/untitled1.x3d");
 	model_cyrstal.Load("Models/cyrstal.3ds");
 	model_alien.Load("Models/Space_Invader.3DS");
 	
@@ -541,11 +718,11 @@ void main(int argc, char** argv)
 
 	glutKeyboardFunc(myKeyboard);
 
-	glutMotionFunc(myMotion);
+	//glutMotionFunc(myMotion);
 
 	glutMouseFunc(myMouse);
 
-	glutReshapeFunc(myReshape);
+	//glutReshapeFunc(myReshape);
 
 	myInit();
 
