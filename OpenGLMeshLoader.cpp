@@ -25,6 +25,12 @@ GLdouble zFar = 500;
 
 //time ( affect the background)
 double time = 0;
+
+//light
+double lightX = 15;
+bool changeDir = false;
+
+//player
 bool povFlag = true;
 
 //player 
@@ -182,12 +188,12 @@ public:
 
 	void thirdPerson() {
 		eye.x = playerX+1;
-		eye.y = 6;
-		eye.z = playerZ +11;
+		eye.y = 8;
+		eye.z = playerZ +12;
 
 		center.x = playerX+1;
 		center.y = 0;
-		center.z = playerZ-4;
+		center.z = playerZ-5;
 
 
 		//glutPostRedisplay();
@@ -221,14 +227,16 @@ Camera camera;
 //////////////////////////////////////
 
 //lvl var
-int lvl = 2;
+int lvl = 1;
 
 // Model Variables lvl1
 Model_3DS model_player;
 Model_3DS model_mars;
-//Model_3DS model_house;
-//Model_3DS model_tree;
-//Model_3DS model_car;
+Model_3DS model_stone;
+Model_3DS model_stones;
+Model_3DS model_Shuttle;
+Model_3DS model_debris;
+
 //Model_3DS model_alien;
 
 // Model Variables lvl2
@@ -246,28 +254,50 @@ GLTexture tex_ground_Mars;
 //=======================================================================
 void InitLightSource()
 {
-	// Enable Lighting for this OpenGL Program
-	glEnable(GL_LIGHTING);
 
-	// Enable Light Source number 0
-	// OpengL has 8 light sources
-	glEnable(GL_LIGHT0);
+	double red = 1 ;
+	double green =1;
+	double blue = 1;
+	
+	if (lvl == 1) {
+		 red =  0.5;
+		 green =  0.5;
+		 blue =  0.5;
+	}
+	else if (lvl == 2) {
+		red = 1;
+		green = 1;
+		blue = 1;
+	}
+	GLfloat lightIntensity[] = {red, green, blue, 1.0f};
+	GLfloat lightPosition[] = { 20.0f,40.0f, 40.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
+	//enable lighing and glight0 in main
+	//	change intensity in 2nd level
+	//	Moving light source :
 
-	// Define Light source 0 ambient light
-	GLfloat ambient[] = { 0.1f, 0.1f, 0.1, 1.0f };
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-
-	// Define Light source 0 diffuse light
-	GLfloat diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-
-	// Define Light source 0 Specular light
-	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-
-	// Finally, define light source 0 position in World Space
-	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	double rL = 0;
+	double gL = 0;
+	double bL = 0;
+	double yL = 5;
+	if (lvl == 1) {
+		 rL = 1;
+		 gL = 0.9;
+		 bL = 0;
+		 yL = 5;
+	}
+	else if (lvl == 2) {
+		rL = 1;
+		gL = 0;
+		bL = 0;
+		yL = 2;
+	}
+	GLfloat lightIntensity2[] = {rL, gL, bL, 1.0f};
+	GLfloat lightPosition2[] = { lightX,yL, -5.0f, 1.0f };
+	GLfloat l2Direction[] = { 0.0, -1.0, 0 };
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightIntensity2);
 }
 
 //=======================================================================
@@ -383,19 +413,18 @@ void drawPlayer(double x,  double z) {
 }
 
 void drawCollectable(double x,  double z) {
-
+	
 	if (lvl == 1) {
 		glPushMatrix();
-		//glTranslatef(5, alienY, -5);
+		glTranslatef(x, 0, z);
 		//glScalef(0.03, 0.03, 0.03);
-		//model_alien.Draw();
+		model_stone.Draw();
 		glPopMatrix();
-	}
-	else if (lvl == 2) {
+
 		glPushMatrix();
 		glTranslatef(x, 0, z);
-		glScalef(0.5, 0.5, 0.5);
-		model_cyrstal.Draw();
+		glScalef(0.015, 0.015, 0.015);
+		model_stones.Draw();
 		glPopMatrix();
 
 		glColor4f(1.0f, 1.0f, 1.0f, 0.5f); // Green color with transparency
@@ -405,22 +434,46 @@ void drawCollectable(double x,  double z) {
 		GLUquadric* quadric = gluNewQuadric();
 
 		glPushMatrix();
-		glTranslatef(x, 0.0, z); // Adjust the position of the sphere
+		glTranslatef(x, 0.7, z); // Adjust the position of the sphere
 		gluSphere(quadric, cyrstalR, 32, 32); // Draw a sphere with radius 1.0
 		glPopMatrix();
 
 		gluDeleteQuadric(quadric);
 		glDisable(GL_BLEND);
 	}
+	else if (lvl == 2) {
+		
+		glPushMatrix();
+		glTranslatef(x, 0, z);
+		glScalef(0.5, 0.5, 0.5);
+		model_cyrstal.Draw();
+		glPopMatrix();
+
+
+		glColor4f(1.0f, 1.0f, 1.0f, 0.5f); // Green color with transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		GLUquadric* quadric = gluNewQuadric();
+
+		glPushMatrix();
+		glTranslatef(x, 0.7, z); // Adjust the position of the sphere
+		gluSphere(quadric, cyrstalR, 32, 32); // Draw a sphere with radius 1.0
+		glPopMatrix();
+
+		gluDeleteQuadric(quadric);
+		glDisable(GL_BLEND);
+	}
+	
 }
 
 void drawObstacle(double x,  double z) {
 
 	if (lvl == 1) {
 		glPushMatrix();
-		//glTranslatef(5, alienY, -5);
-		//glScalef(0.03, 0.03, 0.03);
-		//model_alien.Draw();
+		glTranslatef(x, 0, z);
+		glScalef(0.01, 0.01, 0.01);
+		model_debris.Draw();
 		glPopMatrix();
 	}
 	else if (lvl == 2) {
@@ -435,16 +488,16 @@ void drawObstacle(double x,  double z) {
 void drawTarget(double x, double z) {
 	if (lvl == 1) {
 		glPushMatrix();
-		//glTranslatef(5, alienY, -5);
+		glTranslatef(x, 0, z);
 		//glScalef(0.03, 0.03, 0.03);
-		//model_alien.Draw();
+		model_Shuttle.Draw();
 		glPopMatrix();
 	}
 	else if (lvl == 2) {
 		glPushMatrix();
 		glTranslatef(x, -1, z);
 		//glRotatef(90.f, 1, 0, 0);
-		glScalef(10, 10, 10);
+		glScalef(1, 1, 1);
 		model_rocket.Draw();
 		glPopMatrix();
 	}
@@ -457,7 +510,8 @@ void drawBackground() {
 	if (lvl == 1) {
 		// Draw moon Model in background
 		glPushMatrix();
-		glTranslatef(-10, 10, -15);
+		glTranslatef(-20+time, 10, -50- time);
+		glRotatef(time*20, 0, 1, 0);
 		glScalef(0.08, 0.08, 0.08);
 		model_mars.Draw();
 		glPopMatrix();
@@ -465,7 +519,8 @@ void drawBackground() {
 	else if (lvl == 2) {
 		// Draw moon Model in background
 		glPushMatrix();
-		glTranslatef(-10, 10, -15);
+		glTranslatef(-20+time, 10, -50-time);
+		glRotatef(time * 30, 0, 1, 0);
 		glScalef(0.08, 0.08, 0.08);
 		model_moon.Draw();
 		glPopMatrix();
@@ -480,10 +535,7 @@ void drawBackground() {
 void myDisplay(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
-	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+	InitLightSource();
 
 	// Draw Ground
 	RenderGround();
@@ -529,41 +581,55 @@ void myDisplay(void)
 //=======================================================================
 // Animation Function
 //=======================================================================
-void Anim(int value) {
+void Anim() {
 
 	// animate moon/mars in background
-	time += 0.1;
+	time += 0.0001;
+
+
+	//light
+	if (changeDir) {
+		lightX -= 0.01;
+		if (lightX <= 12)
+			changeDir = false;
+	}
+	else {
+		lightX += 0.01;
+		if (lightX >= 18)
+			changeDir = true;
+	}
 
 	// animate lvl 2 aliens
 	if (alienD) {
-		alienY += 0.1;
+		alienY += 0.002;
 		if (alienY > 1.2) {
 			alienD = false;
 		}
 	}
 	else {
-		alienY -= 0.1;
+		alienY -= 0.003;
 		if (alienY < 0.7) {
 			alienD = true;
 		}
 	}
 
-	// animate lvl 2 aliens
+	// animate lvl 2 collectable
+	double lvlVar = 2 / lvl;
 	if (cyrstalD) {
-		cyrstalR += 0.1;
-		if (cyrstalR > 1.5 ) {
+		cyrstalR += 0.002 /lvlVar ;
+		if (cyrstalR > 1.5 * lvlVar ) {
 			cyrstalD = false;
 		}
 	}
 	else {
-		cyrstalR -= 0.1;
-		if (cyrstalR < 0.7) {
+		cyrstalR -= 0.001 / lvlVar;
+		if (cyrstalR < 1 * lvlVar) {
 			cyrstalD = true;
 		}
 	}
 
 	glutPostRedisplay();
-	glutTimerFunc(100, Anim, 0);
+	//glutTimerFunc(100, Anim, 0);
 }
 
 //=======================================================================
@@ -683,11 +749,17 @@ void LoadAssets()
 	model_player.Load("Models/robot.3ds");
 	//level 1
 	model_mars.Load("Models/Mars/moon.3DS");
+	model_stone.Load("Models/rock.3ds");
+	model_stones.Load("Models/Rock_Pile_Ironworks.3ds");
+	model_Shuttle.Load("Models/Shuttle(rocket)/Transport Shuttle_3ds.3ds");
+	model_debris.Load("Models/debris/debris.3ds");
+
 	//level 2 
 	model_moon.Load("Models/Moon/moon.3DS");
-	//model_rocket.Load("Models/untitled1.x3d");
+	model_rocket.Load("Models/rocket.3ds");
 	model_cyrstal.Load("Models/cyrstal.3ds");
 	model_alien.Load("Models/Space_Invader.3DS");
+
 	
 
 	//loadBMP()
@@ -695,7 +767,7 @@ void LoadAssets()
 	tex_ground_Moon.Load("Textures/moonmap2.bmp");
 	tex_ground_Mars.Load("Textures/mars-texture.bmp");
 	
-	loadBMP(&tex, "Textures/SpaceTexture.bmp", true);
+	loadBMP(&tex, "Textures/SpaceTexture1.bmp", true);
 }
 
 
@@ -732,9 +804,9 @@ void main(int argc, char** argv)
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_COLOR_MATERIAL);
-	//glutIdleFunc(Anim);
-	glutTimerFunc(0, Anim, 0);
-
+	glutIdleFunc(Anim);
+	//glutTimerFunc(0, Anim, 0);
+	glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
 
 	glutMainLoop();
