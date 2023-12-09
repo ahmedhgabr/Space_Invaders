@@ -6,6 +6,8 @@
 #include <iostream>
 #include <Windows.h>
 #include<mmsystem.h>
+#include <string>
+#include <string.h>
 #pragma comment(lib,"winmm.lib")
 
 int WIDTH = 1280;
@@ -33,7 +35,7 @@ double lightX = 15;
 bool changeDir = false;
 
 //player
-bool povFlag = true;
+bool povFlag = false;
 
 //player 
 double playerX = 0;
@@ -51,6 +53,21 @@ bool cyrstalD = true;
 //metal 
 double collectY = 2;
 
+//score
+int score = 0;
+double scoreX = 0;
+
+//obstacles
+bool showObstacle1 = true;
+bool showObstacle2 = true;
+bool showObstacle3 = true;
+bool showObstacle4 = true;
+
+//collectable
+bool showCollectable1 = true;
+bool showCollectable2 = true;
+bool showCollectable3 = true;
+bool showCollectable4 = true;
 
 
 /// ///////////////////////////
@@ -60,7 +77,6 @@ class Vector
 {
 public:
 	GLdouble x, y, z;
-	Vector() {}
 	Vector(GLdouble _x, GLdouble _y, GLdouble _z) : x(_x), y(_y), z(_z) {}
 	//================================================================================================//
 	// Operator Overloading; In C++ you can override the behavior of operators for you class objects. //
@@ -219,9 +235,9 @@ public:
 			center.x, center.y, center.z,
 			up.x, up.y, up.z
 		);
-		printf("%f ", eye.x); printf("%f ", eye.y); printf("%f \n", eye.z);
+		/*printf("%f ", eye.x); printf("%f ", eye.y); printf("%f \n", eye.z);
 		printf("%f ", center.x); printf("%f ", center.y); printf("%f \n", center.z);
-		printf("%f ", up.x); printf("%f ", up.y); printf("%f \n\n", up.z);
+		printf("%f ", up.x); printf("%f ", up.y); printf("%f \n\n", up.z);*/
 	}
 };
 
@@ -231,10 +247,11 @@ Camera camera;
 //////////////////////////////////////
 
 //lvl var
-int lvl = 2;
+int lvl = 1;
 
 // Model Variables lvl1
 Model_3DS model_player;
+Model_3DS model_score;
 Model_3DS model_mars;
 Model_3DS model_stone;
 Model_3DS model_stones;
@@ -533,6 +550,23 @@ void drawBackground() {
 
 }
 
+void print(int x, int y, int z, char* string)
+{
+	int len, i;
+
+	//set the position of the text in the window using the x and y coordinates
+	glRasterPos3f(x, y, z);
+
+	//get the length of the string to display
+	len = (int)strlen(string);
+
+	//loop to display character by character
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+}
+
 //=======================================================================
 // Display Function
 //=======================================================================
@@ -552,16 +586,24 @@ void myDisplay(void)
 	drawTarget(15, -10);
 
 	//Collectable ( lvl 1 -> , lvl 2 -> cyrstal)
-	drawCollectable(-5,   10);
-	drawCollectable(2,  10);
-	drawCollectable(9,  10);
-	drawCollectable(16,  10);
+	if(showCollectable1)
+		drawCollectable(-14,   -15);
+	if (showCollectable2)
+		drawCollectable(-3,  5);
+	if (showCollectable3)
+		drawCollectable(4,  -10);
+	if (showCollectable4)
+		drawCollectable(16,  10);
 
 	//Obstacle (lvl 1 -> metal , lvl 2 -> alien )
-	drawObstacle(-7,  3);
-	drawObstacle(0,  3);
-	drawObstacle(7,  3);
-	drawObstacle(14, 3);
+	if(showObstacle1)
+		drawObstacle(-8,  -7);
+	if (showObstacle2)
+		drawObstacle(-2,  3);
+	if (showObstacle3)
+		drawObstacle(7,  0);
+	if (showObstacle4)
+		drawObstacle(14, 8);
 	
 	
 	//sky box
@@ -577,6 +619,20 @@ void myDisplay(void)
 	gluDeleteQuadric(qobj);
 	glPopMatrix();
 
+	//score
+	glPushMatrix();
+	glColor3f(1, 1, 1);
+	char* p0s[20];
+	sprintf((char*)p0s, "Score: %d", score);
+	print(scoreX, 0,-16, (char*)p0s);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(1, 0, -16.3);
+	glScalef(7, 1, 2);
+	model_score.Draw();
+	glPopMatrix();
+	
 
 	glutSwapBuffers();
 }
@@ -636,6 +692,64 @@ void Anim() {
 	//glutTimerFunc(100, Anim, 0);
 }
 
+void handleMove() {
+	//Collectable collision
+	if (showCollectable1 && playerX >= -17 && playerX <= -13 && playerZ >= -17 && playerZ <= -13) {
+		showCollectable1 = false;
+		score += 20;
+	}
+	if (showCollectable2 && playerX >= -6 && playerX <= -3 && playerZ >= 3 && playerZ <= 7) {
+		showCollectable2 = false;
+		score += 20;
+	}
+	if (showCollectable3 && playerX >= 2 && playerX <= 4 && playerZ >= -12 && playerZ <= -8) {
+		showCollectable3 = false;
+		score += 20;
+	}
+	if (showCollectable4 && playerX >= 14 && playerX <= 16 && playerZ >= 8 && playerZ <= 12) {
+		showCollectable4 = false;
+		score += 20;
+	}
+
+	//Obstacle collision
+	if (showObstacle1 && playerX >= -11 && playerX <= -8 && playerZ >= -9 && playerZ <= -6) {
+		showObstacle1 = false;
+		score -= 30;
+		playerZ += 5;
+	}
+	if (showObstacle2 && playerX >= -5 && playerX <= -2 && playerZ >= 1 && playerZ <= 4) {
+		showObstacle2 = false;
+		score -= 30;
+		playerZ += 5;
+	}
+	if (showObstacle3 && playerX >= 4 && playerX <= 7 && playerZ >= -2 && playerZ <= 1) {
+		showObstacle3 = false;
+		score -= 30;
+		playerZ += 5;
+	}
+	if (showObstacle4 && playerX >= 11 && playerX <= 14 && playerZ >= 6 && playerZ <= 9) {
+		showObstacle4 = false;
+		score -= 30;
+		playerZ += 5;
+	}
+
+	//target collision
+	if (playerX >= 13 && playerX <= 17 && playerZ >= -12 && playerZ <= -8) {
+		playerX = 0;
+		playerZ = 20;
+		lvl = 2;
+		showCollectable1 = true;
+		showCollectable2 = true;
+		showCollectable3 = true;
+		showCollectable4 = true;
+		showObstacle1 = true;
+		showObstacle2 = true;
+		showObstacle3 = true;
+		showObstacle4 = true;
+
+	}
+}
+
 //=======================================================================
 // Keyboard Function
 //=======================================================================
@@ -649,6 +763,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		break;
 	case 'a':
 		playerX-=0.4;
+		//scoreX -= 0.4;
 		
 		break;
 	case 's':
@@ -657,7 +772,8 @@ void myKeyboard(unsigned char button, int x, int y)
 		break;
 	case 'd':
 		playerX+=0.4;
-		
+		//scoreX += 0.4;
+
 		break;
 	case 27:
 		exit(0);
@@ -666,6 +782,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		break;
 	}
 	
+	handleMove();
 	PlaySound(TEXT("sound/move.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	camera.pov();
 	glLoadIdentity();
@@ -751,6 +868,7 @@ void LoadAssets()
 	// Loading Model files
 
 	model_player.Load("Models/robot.3ds");
+	model_score.Load("Models/wall/wall.3ds");
 	//level 1
 	model_mars.Load("Models/Mars/moon.3DS");
 	model_stone.Load("Models/rock.3ds");
