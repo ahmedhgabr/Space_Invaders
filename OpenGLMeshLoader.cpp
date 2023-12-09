@@ -3,7 +3,9 @@
 #include "GLTexture.h"
 #include <glut.h>
 #include <math.h>
-
+#include <iostream>
+#include <Windows.h>
+#include<mmsystem.h>
 #pragma comment(lib,"winmm.lib")
 
 int WIDTH = 1280;
@@ -24,7 +26,7 @@ GLdouble zFar = 500;
 //==============================
 
 //time ( affect the background)
-double time = 0;
+double myTime = 0;
 
 //light
 double lightX = 15;
@@ -48,6 +50,8 @@ bool cyrstalD = true;
 
 //metal 
 double collectY = 2;
+
+
 
 /// ///////////////////////////
 
@@ -227,7 +231,7 @@ Camera camera;
 //////////////////////////////////////
 
 //lvl var
-int lvl = 1;
+int lvl = 2;
 
 // Model Variables lvl1
 Model_3DS model_player;
@@ -495,9 +499,9 @@ void drawTarget(double x, double z) {
 	}
 	else if (lvl == 2) {
 		glPushMatrix();
-		glTranslatef(x, -1, z);
+		glTranslatef(x, 0, z);
 		//glRotatef(90.f, 1, 0, 0);
-		glScalef(1, 1, 1);
+		glScalef(20, 20, 20);
 		model_rocket.Draw();
 		glPopMatrix();
 	}
@@ -505,13 +509,13 @@ void drawTarget(double x, double z) {
 
 
 void drawBackground() {
-	double x_bg = -time-5;
+	double x_bg = -myTime-5;
 	double z_bg = (x_bg * x_bg) + 10;
 	if (lvl == 1) {
 		// Draw moon Model in background
 		glPushMatrix();
-		glTranslatef(-20+time, 10, -50- time);
-		glRotatef(time*20, 0, 1, 0);
+		glTranslatef(-20+myTime, 10, -50- myTime);
+		glRotatef(myTime*20, 0, 1, 0);
 		glScalef(0.08, 0.08, 0.08);
 		model_mars.Draw();
 		glPopMatrix();
@@ -519,8 +523,8 @@ void drawBackground() {
 	else if (lvl == 2) {
 		// Draw moon Model in background
 		glPushMatrix();
-		glTranslatef(-20+time, 10, -50-time);
-		glRotatef(time * 30, 0, 1, 0);
+		glTranslatef(-20+myTime, 10, -50-myTime);
+		glRotatef(myTime * 30, 0, 1, 0);
 		glScalef(0.08, 0.08, 0.08);
 		model_moon.Draw();
 		glPopMatrix();
@@ -584,7 +588,7 @@ void myDisplay(void)
 void Anim() {
 
 	// animate moon/mars in background
-	time += 0.0001;
+	myTime += 0.0001;
 
 
 	//light
@@ -662,7 +666,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		break;
 	}
 	
-
+	PlaySound(TEXT("sound/move.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	camera.pov();
 	glLoadIdentity();
 	camera.look();
@@ -756,7 +760,7 @@ void LoadAssets()
 
 	//level 2 
 	model_moon.Load("Models/Moon/moon.3DS");
-	model_rocket.Load("Models/rocket.3ds");
+	model_rocket.Load("Models/rocket1.3ds");
 	model_cyrstal.Load("Models/cyrstal.3ds");
 	model_alien.Load("Models/Space_Invader.3DS");
 
