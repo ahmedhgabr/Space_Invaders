@@ -193,6 +193,16 @@ public:
 		up.x = 0.059884; up.y = 0.997871; up.z = -0.025836;
 	}
 
+	void reset() {
+		eye.x = 0;
+		eye.y = 10;
+		eye.z = 40;
+
+		center.x = 0;
+		center.y = 0;
+		center.z = 0;
+
+	}
 	void firstPerson() {
 		eye.x = playerX + 1;
 		eye.y = 4;
@@ -290,7 +300,7 @@ void InitLightSource()
 		green = 1;
 		blue = 1;
 	}
-	GLfloat lightIntensity[] = {red, green, blue, 1.0f};
+	GLfloat lightIntensity[] = {red - myTime/100, green - myTime / 100, blue - myTime / 100, 1.0f};
 	GLfloat lightPosition[] = { 20.0f,40.0f, 40.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
@@ -442,11 +452,11 @@ void drawCollectable(double x,  double z) {
 		model_stone.Draw();
 		glPopMatrix();
 
-		glPushMatrix();
+		/*glPushMatrix();
 		glTranslatef(x, 0, z);
 		glScalef(0.015, 0.015, 0.015);
 		model_stones.Draw();
-		glPopMatrix();
+		glPopMatrix();*/
 
 		glColor4f(1.0f, 1.0f, 1.0f, 0.5f); // Green color with transparency
 		glEnable(GL_BLEND);
@@ -493,7 +503,7 @@ void drawObstacle(double x,  double z) {
 	if (lvl == 1) {
 		glPushMatrix();
 		glTranslatef(x, 0, z);
-		glScalef(0.01, 0.01, 0.01);
+		glScalef(0.008, 0.02, 0.008);
 		model_debris.Draw();
 		glPopMatrix();
 	}
@@ -573,65 +583,96 @@ void print(int x, int y, int z, char* string)
 void myDisplay(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	InitLightSource();
-
-	// Draw Ground
-	RenderGround();
-	drawBackground();
-
-	// player ( robot)
-	drawPlayer(playerX, playerZ);
-
-	//Target ( lvl 1 -> space station , lvl 2 -> rocket)
-	drawTarget(15, -10);
-
-	//Collectable ( lvl 1 -> , lvl 2 -> cyrstal)
-	if(showCollectable1)
-		drawCollectable(-14,   -15);
-	if (showCollectable2)
-		drawCollectable(-3,  5);
-	if (showCollectable3)
-		drawCollectable(4,  -10);
-	if (showCollectable4)
-		drawCollectable(16,  10);
-
-	//Obstacle (lvl 1 -> metal , lvl 2 -> alien )
-	if(showObstacle1)
-		drawObstacle(-8,  -7);
-	if (showObstacle2)
-		drawObstacle(-2,  3);
-	if (showObstacle3)
-		drawObstacle(7,  0);
-	if (showObstacle4)
-		drawObstacle(14, 8);
 	
-	
-	//sky box
-	glPushMatrix();
-	GLUquadricObj* qobj;
-	qobj = gluNewQuadric(); 
-	glTranslated(50, 0, 0);
-	glRotated(90, 1, 0, 1);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	gluQuadricTexture(qobj, true);
-	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 100, 100, 100);
-	gluDeleteQuadric(qobj);
-	glPopMatrix();
 
-	//score
-	glPushMatrix();
-	glColor3f(1, 1, 1);
-	char* p0s[20];
-	sprintf((char*)p0s, "Score: %d", score);
-	print(scoreX, 0,-16, (char*)p0s);
-	glPopMatrix();
+	if (lvl > 2) {
+		if (score > 0) {
+			
+			myTime = 0;
+			glColor3f(1.0f, 1.0f, 1.0f); // Green color for the text
+			glPushMatrix();
+			glTranslatef(0.0 - myTime / 5.0, 0.0, 0.0); // Adjust the position of the text
+			glScalef(0.05, 0.05, 0.05); // Adjust the size of the text
+			char* string = "Winner.Winner.Winner. give the dev a bouns.";
+			while (*string) {
+				glutStrokeCharacter(GLUT_STROKE_ROMAN, *string++);
+			}
+			glPopMatrix();
+			
+		}
+		else {
+			glColor3f(1.0f, 1.0f, 1.0f); // Green color for the text
+			glPushMatrix();
+			glTranslatef(0.0 - myTime / 5.0, 0.0, 0.0); // Adjust the position of the text
+			glScalef(0.005, 0.005, 0.005); // Adjust the size of the text
+			char* string = "Game Over. Game Over. Game Over. Game Over. give the dev a bouns.";
+			while (*string) {
+				glutStrokeCharacter(GLUT_STROKE_ROMAN, *string++);
+			}
+			glPopMatrix();
+		}
+		glColor3f(1.0f, 1.0f, 1.0f);
+	}
+	else {
+		InitLightSource();
+		// Draw Ground
+		RenderGround();
+		drawBackground();
 
-	glPushMatrix();
-	glTranslatef(1, 0, -16.3);
-	glScalef(7, 1, 2);
-	model_score.Draw();
-	glPopMatrix();
+		// player ( robot)
+		drawPlayer(playerX, playerZ);
+
+		//Target ( lvl 1 -> space station , lvl 2 -> rocket)
+		drawTarget(15, -10);
+
+		//Collectable ( lvl 1 -> , lvl 2 -> cyrstal)
+		if (showCollectable1)
+			drawCollectable(-14, -15);
+		if (showCollectable2)
+			drawCollectable(-3, 5);
+		if (showCollectable3)
+			drawCollectable(4, -10);
+		if (showCollectable4)
+			drawCollectable(16, 10);
+
+		//Obstacle (lvl 1 -> metal , lvl 2 -> alien )
+		if (showObstacle1)
+			drawObstacle(-8, -7);
+		if (showObstacle2)
+			drawObstacle(-2, 3);
+		if (showObstacle3)
+			drawObstacle(7, 0);
+		if (showObstacle4)
+			drawObstacle(14, 8);
+
+
+		//sky box
+		glPushMatrix();
+		GLUquadricObj* qobj;
+		qobj = gluNewQuadric();
+		glTranslated(50, 0, 0);
+		glRotated(90, 1, 0, 1);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		gluQuadricTexture(qobj, true);
+		gluQuadricNormals(qobj, GL_SMOOTH);
+		gluSphere(qobj, 100, 100, 100);
+		gluDeleteQuadric(qobj);
+		glPopMatrix();
+
+		//score
+		glPushMatrix();
+		glColor3f(1, 1, 1);
+		char* p0s[20];
+		sprintf((char*)p0s, "Score: %d", score);
+		print(scoreX, 0, -16, (char*)p0s);
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(1, 0, -16.3);
+		glScalef(7, 1, 2);
+		model_score.Draw();
+		glPopMatrix();
+	}
 	
 
 	glutSwapBuffers();
@@ -693,22 +734,49 @@ void Anim() {
 }
 
 void handleMove() {
+	
+
 	//Collectable collision
 	if (showCollectable1 && playerX >= -17 && playerX <= -13 && playerZ >= -17 && playerZ <= -13) {
 		showCollectable1 = false;
 		score += 20;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/rock.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if(lvl == 2){
+			PlaySound(TEXT("sound/collect.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		
 	}
 	if (showCollectable2 && playerX >= -6 && playerX <= -3 && playerZ >= 3 && playerZ <= 7) {
 		showCollectable2 = false;
 		score += 20;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/rock.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/collect.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 	if (showCollectable3 && playerX >= 2 && playerX <= 4 && playerZ >= -12 && playerZ <= -8) {
 		showCollectable3 = false;
 		score += 20;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/rock.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/collect.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 	if (showCollectable4 && playerX >= 14 && playerX <= 16 && playerZ >= 8 && playerZ <= 12) {
 		showCollectable4 = false;
 		score += 20;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/rock.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/collect.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 
 	//Obstacle collision
@@ -716,28 +784,62 @@ void handleMove() {
 		showObstacle1 = false;
 		score -= 30;
 		playerZ += 5;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/crash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/alienCrash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 	if (showObstacle2 && playerX >= -5 && playerX <= -2 && playerZ >= 1 && playerZ <= 4) {
 		showObstacle2 = false;
 		score -= 30;
 		playerZ += 5;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/crash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/alienCrash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 	if (showObstacle3 && playerX >= 4 && playerX <= 7 && playerZ >= -2 && playerZ <= 1) {
 		showObstacle3 = false;
 		score -= 30;
 		playerZ += 5;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/crash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/alienCrash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 	if (showObstacle4 && playerX >= 11 && playerX <= 14 && playerZ >= 6 && playerZ <= 9) {
 		showObstacle4 = false;
 		score -= 30;
 		playerZ += 5;
+		if (lvl == 1) {
+			PlaySound(TEXT("sound/crash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 2) {
+			PlaySound(TEXT("sound/alienCrash.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	}
 
 	//target collision
 	if (playerX >= 13 && playerX <= 17 && playerZ >= -12 && playerZ <= -8) {
 		playerX = 0;
 		playerZ = 20;
-		lvl = 2;
+		lvl++;
+		if(lvl == 2)
+		{
+			PlaySound(TEXT("sound/nextLevel.wav"), NULL, SND_FILENAME | SND_SYNC);
+		}
+		else if (lvl == 3 && score > 0) {
+			PlaySound(TEXT("sound/win.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		else if (lvl == 3 && score < 0) {
+			PlaySound(TEXT("sound/lose.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 		showCollectable1 = true;
 		showCollectable2 = true;
 		showCollectable3 = true;
@@ -755,26 +857,42 @@ void handleMove() {
 //=======================================================================
 void myKeyboard(unsigned char button, int x, int y)
 {
+	/*printf("xx %f",playerX );
+	printf("zz %f", playerZ);*/
 	switch (button)
 	{
 	case 'w':
-		playerZ-=0.4;
-		
+		if(playerZ > -18)
+		{
+			playerZ -= 0.4;
+		}
 		break;
 	case 'a':
-		playerX-=0.4;
+		if(playerX >-20)
+		{
+			playerX -= 0.4;
+		}
 		//scoreX -= 0.4;
 		
 		break;
 	case 's':
-		playerZ+=0.4;
-		
+		if (playerZ < 20) {
+			playerZ += 0.4;
+		}
 		break;
+		
 	case 'd':
-		playerX+=0.4;
+		if (playerX < 17) {
+			playerX += 0.4;
+		}
 		//scoreX += 0.4;
 
 		break;
+	case 'p':
+		camera.reset();
+		glLoadIdentity();
+		camera.look();
+		return;
 	case 27:
 		exit(0);
 		break;
@@ -783,7 +901,7 @@ void myKeyboard(unsigned char button, int x, int y)
 	}
 	
 	handleMove();
-	PlaySound(TEXT("sound/move.wav"), NULL, SND_FILENAME | SND_ASYNC);
+	//PlaySound(TEXT("sound/move.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	camera.pov();
 	glLoadIdentity();
 	camera.look();
