@@ -41,6 +41,9 @@ bool povFlag = false;
 double playerX = 0;
 double playerY = 0;
 double playerZ = 20;
+char playerD = 's';
+double playerA = 0.007;
+bool playerS = false;
 
 //alien
 double alienY = 1;
@@ -204,26 +207,49 @@ public:
 
 	}
 	void firstPerson() {
+		if (playerD == 'w') {
+		
 		eye.x = playerX + 1;
 		eye.y = 4;
+		
 		eye.z = playerZ -1;
 
 		center.x = playerX + 1;
 		center.y = 0;
 		center.z = playerZ -10  ;
+		}
+		else {
+			eye.x = playerX - 1;
+			eye.y = 4;
+			eye.z = playerZ + 1;
 
+			center.x = playerX - 1;
+			center.y = 0;
+			center.z = playerZ  + 10;
+		}
 
 		//glutPostRedisplay();
 	}
 
 	void thirdPerson() {
-		eye.x = playerX+1;
-		eye.y = 8;
-		eye.z = playerZ +12;
+		if (playerD== 'w') {
+			eye.x = playerX + 1;
+			eye.y = 8;
+			eye.z = playerZ + 12;
 
-		center.x = playerX+1;
-		center.y = 0;
-		center.z = playerZ-5;
+			center.x = playerX + 1;
+			center.y = 0;
+			center.z = playerZ - 5;
+		}
+		else {
+			eye.x = playerX +1;
+			eye.y = 8;
+			eye.z = playerZ - 12;
+
+			center.x = playerX +1;
+			center.y = 0;
+			center.z = playerZ + 5;
+		}
 
 
 		//glutPostRedisplay();
@@ -436,9 +462,18 @@ void RenderGround()
 
 void drawPlayer(double x,  double z) {	
 	glPushMatrix();
-	glTranslatef(x, playerY,z );
-	glRotatef(180, 0, 1, 0);
-	glScalef(0.007, 0.007, 0.007);
+	
+
+	if (playerD == 'w') {
+		glTranslatef(x, playerY, z);
+		glRotatef(180, 0, 1, 0);
+	}
+	else {
+		glTranslatef(x+2.8, playerY, z);
+	}
+
+		
+	glScalef(playerA,playerA, playerA);
 	model_player.Draw();
 	glPopMatrix();
 }
@@ -714,6 +749,20 @@ void Anim() {
 		}
 	}
 
+	// animate lvl 2 aliens
+	if (playerS) {
+		playerA += 0.00001;
+		if (playerA > 0.008) {
+			playerS = false;
+		}
+	}
+	else {
+		playerA -= 0.00001;
+		if (playerA < 0.006) {
+			playerS = true;
+		}
+	}
+
 	// animate lvl 2 collectable
 	double lvlVar = 2 / lvl;
 	if (cyrstalD) {
@@ -857,20 +906,21 @@ void handleMove() {
 //=======================================================================
 void myKeyboard(unsigned char button, int x, int y)
 {
-	/*printf("xx %f",playerX );
-	printf("zz %f", playerZ);*/
+	
 	switch (button)
 	{
 	case 'w':
 		if(playerZ > -18)
 		{
 			playerZ -= 0.4;
+			playerD = 'w';
 		}
 		break;
 	case 'a':
 		if(playerX >-20)
 		{
 			playerX -= 0.4;
+			//playerD = 'w';
 		}
 		//scoreX -= 0.4;
 		
@@ -878,12 +928,14 @@ void myKeyboard(unsigned char button, int x, int y)
 	case 's':
 		if (playerZ < 20) {
 			playerZ += 0.4;
+			playerD = 's';
 		}
 		break;
 		
 	case 'd':
 		if (playerX < 17) {
 			playerX += 0.4;
+			//playerD = 'w';
 		}
 		//scoreX += 0.4;
 

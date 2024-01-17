@@ -1,0 +1,14 @@
+﻿  OpenGLMeshLoader.cpp
+C:\Users\Asus\Desktop\Graphics Project\try-models\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\Asus\Desktop\Graphics Project\try-models\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(329,34): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(329,54): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(329,75): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(353,31): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(353,35): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(353,39): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(354,31): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(354,38): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+C:\Users\Asus\Desktop\Graphics Project\try-models\OpenGLMeshLoader.cpp(701,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+GLTexture.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+  OpenGLMeshLoader.vcxproj -> C:\Users\Asus\Desktop\Graphics Project\try-models\Debug\OpenGLMeshLoader19.exe
